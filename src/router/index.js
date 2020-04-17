@@ -38,7 +38,6 @@ router.beforeEach((to, from, next) => {
     //没有携带token，强制回到login界面
     if (!token) return next('/login');
     next();
-
 })
 
 
