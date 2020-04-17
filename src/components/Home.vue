@@ -6,7 +6,7 @@
                 <img src="../assets/logo.png" alt="头像">
                 <span>电商管理系统</span>
             </div>
-            <el-button type="info" @click="logout" round>退出</el-button>
+            <el-button type="danger" @click="logout">退出</el-button>
         </el-header>
         <el-container>
             <!-- 侧边栏 -->
