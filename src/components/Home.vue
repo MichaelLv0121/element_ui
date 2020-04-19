@@ -24,7 +24,8 @@
                             unique-opened
                             router
                             :collapse="isCollapse"
-                            :collapse-transition="false">
+                            :collapse-transition="false"
+                            :default-active="currentTree">
                         <!-- 一级菜单 -->
                         <el-submenu :index="item.path" v-for="item in menuList" :key="item.id">
                             <template slot="title">
@@ -32,7 +33,11 @@
                                 <span>{{item['authName']}}</span>
                             </template>
                             <!-- 二级菜单 -->
-                            <el-menu-item :index="subItem.path" v-for="subItem in item.children" :key="subItem.id">
+                            <el-menu-item
+                                    :index="subItem.path"
+                                    v-for="subItem in item.children"
+                                    :key="subItem.id"
+                                    @click="handleClickMenuItem(subItem.path)">
                                 <template slot="title">
                                     <i class="el-icon-ship"></i>
                                     <span>{{subItem['authName']}}</span>
@@ -56,12 +61,16 @@
         data() {
             return {
                 menuList: [],
-                isCollapse: false
+                isCollapse: false,
+                //当前被选中的tree
+                currentTree: ''
             }
         },
         created() {
             //初始化后立刻向后台获取菜单列表
-            this.getMenuList()
+            this.getMenuList();
+            //初始化后立即获取当前被选中的tree
+            this.currentTree = window.sessionStorage.getItem('path');
         },
         methods: {
             //退出登录原理：清空sessionStorage中的token，并手动跳转到 /login 界面
@@ -73,8 +82,8 @@
                 }).then(() => {
                     window.sessionStorage.clear();
                     this.$router.push('/login');
-                }).catch(() => {
-
+                }).catch((err) => {
+                    this.$message.error('退出系统失败！' + err);
                 });
             },
             //获取左侧菜单列表
@@ -86,6 +95,11 @@
             //缩放侧边栏菜单
             collapseMenu() {
                 this.isCollapse = !this.isCollapse;
+            },
+            //点击二级菜单获取跳转路由路径
+            handleClickMenuItem(path) {
+                window.sessionStorage.setItem('path', path);
+                this.currentTree = path;
             }
         }
     }
@@ -137,7 +151,7 @@
 
     .collapseBtn {
         text-align: center;
-        background-color: #c6c6c6;
+        background-color: #dfdfdf;
         font-size: 12px;
         line-height: 17px;
         letter-spacing: 0.1em;
