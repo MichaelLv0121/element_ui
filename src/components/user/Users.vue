@@ -51,7 +51,8 @@
                                        @click="handleDelUser(scope.row)"></el-button>
                         </el-tooltip>
                         <el-tooltip effect="dark" content="分配角色" placement="top" :enterable="false">
-                            <el-button type="info" icon="el-icon-setting" circle></el-button>
+                            <el-button type="info" icon="el-icon-setting" circle
+                                       @click="handleDeliverRole(scope.row)"></el-button>
                         </el-tooltip>
                     </template>
                 </el-table-column>
@@ -120,6 +121,39 @@
                     <el-button type="primary" @click="handleEditUser('editUserFormRef')">确 定</el-button>
                 </span>
             </el-dialog>
+
+            <!-- 分配角色对话框 -->
+            <el-dialog
+                    title="分配角色"
+                    :visible.sync="deliverRoleVisible"
+                    @closed="handleCloseDeliverRoleDialog"
+                    width="50%">
+                <div>
+                    <p>当前用户：{{currentLineUserInfo['username']}}</p>
+                    <p>当前角色：{{currentLineUserInfo['role_name']}}</p>
+                    <el-form label-position="left"
+                             :model="setUserForm"
+                             :rules="userFormRules"
+                             ref="userFormRef"
+                             label-width="110px">
+                        <el-form-item label="分配新角色：" prop="selectedRoleId">
+                            <el-select v-model="setUserForm.selectedRoleId" placeholder="请选择">
+                                <el-option
+                                        v-for="item in allRoleList"
+                                        :key="item['id']"
+                                        :label="item['roleName']"
+                                        :value="item['id']">
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <span slot="footer" class="dialog-footer">
+                    <el-button @click="deliverRoleVisible = false">取 消</el-button>
+                    <el-button type="primary" @click="handleSetNewRole(currentLineUserInfo)">确 定</el-button>
+                </span>
+            </el-dialog>
+
         </el-card>
     </div>
 </template>
@@ -198,7 +232,23 @@
                         {validator: checkPhoneNum, trigger: 'blur'}
                     ]
                 },
-
+                //分配角色对话框显示与否
+                deliverRoleVisible: false,
+                //当前行的用户信息
+                currentLineUserInfo: [],
+                //所有可分配的角色
+                allRoleList: [],
+                //分配角色表单
+                setUserForm: {
+                    //被选中的角色id
+                    selectedRoleId: ''
+                },
+                //分配角色表单对话框绑定的数据对象校验规则
+                userFormRules: {
+                    selectedRoleId: [
+                        {required: true, message: '请选择角色', trigger: 'change'}
+                    ]
+                },
             }
         },
         created() {
@@ -308,6 +358,32 @@
                 }
                 this.$message.success('删除用户成功！');
                 await this.getUserList();
+            },
+            //点击“分配角色”按钮
+            async handleDeliverRole(role) {
+                this.currentLineUserInfo = role;
+                //获取所有可分配的角色
+                const {data: res} = await this.$http.get('roles');
+                if (res['meta']['status'] !== 200) return this.$message.error('获取可分配的角色失败！');
+                this.allRoleList = res['data'];
+                this.deliverRoleVisible = true;
+            },
+            //关闭“分配角色”对话框
+            handleCloseDeliverRoleDialog() {
+                this.$refs['userFormRef'].resetFields();
+            },
+            //点击“分配角色”对话框“确定”按钮
+            handleSetNewRole(role) {
+                //表单预验证
+                this.$refs['userFormRef'].validate(async (valid) => {
+                    if (valid) {
+                        const {data: res} = await this.$http.put(`users/${role.id}/role`, {rid: this.setUserForm.selectedRoleId});
+                        if (res['meta']['status'] !== 200) return this.$message.error('分配角色失败！' + res['meta']['msg']);
+                        this.$message.success('分配角色成功！');
+                        this.deliverRoleVisible = false;
+                        await this.getUserList();
+                    }
+                });
             }
         }
     }

@@ -6,7 +6,7 @@
                 <img src="../assets/logo.png" alt="头像">
                 <span>电商管理系统</span>
             </div>
-            <el-button type="danger" @click="logout">退出</el-button>
+            <el-button type="danger" @click="logout" size="medium">退出</el-button>
         </el-header>
         <el-container>
             <!-- 侧边栏 -->
@@ -48,7 +48,7 @@
                 </el-col>
             </el-aside>
             <!-- 主要内容 -->
-            <el-main>
+            <el-main :style="{left:isCollapse?'64px':'200px'}">
                 <router-view></router-view>
             </el-main>
         </el-container>
@@ -74,17 +74,16 @@
         },
         methods: {
             //退出登录原理：清空sessionStorage中的token，并手动跳转到 /login 界面
-            logout() {
-                this.$confirm('确定要退出系统吗？', '提示', {
+            async logout() {
+                let flag = await this.$confirm('确定要退出系统吗？', '提示', {
                     confirmButtonText: '确定',
                     cancelButtonText: '取消',
                     type: 'info'
-                }).then(() => {
+                }).catch(err => err);
+                if (flag === 'confirm') {
                     window.sessionStorage.clear();
-                    this.$router.push('/login');
-                }).catch((err) => {
-                    this.$message.error('退出系统失败！' + err);
-                });
+                    await this.$router.push('/login');
+                }
             },
             //获取左侧菜单列表
             async getMenuList() {
@@ -112,6 +111,7 @@
 
     .el-header {
         background-color: #343a40;
+        position: relative;
 
         > div {
             img {
@@ -135,6 +135,11 @@
 
     .el-aside {
         background-color: #f8f9fa;
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 60px;
+        bottom: 0;
 
         .el-menu {
             border-right: 0;
@@ -143,9 +148,18 @@
 
     .el-main {
         background-color: #ffffff;
+        position: absolute;
+        right: 0;
+        top: 60px;
+        bottom: 0;
+        overflow-y: scroll;
     }
 
     .sideMenu {
+        font-weight: 600;
+    }
+
+    .el-menu-item {
         font-weight: 600;
     }
 
