@@ -27,14 +27,14 @@
                             :collapse-transition="false"
                             :default-active="currentTree">
                         <!-- 一级菜单 -->
-                        <el-submenu :index="item.path" v-for="item in menuList" :key="item.id">
+                        <el-submenu :index="'/'+item.path" v-for="item in menuList" :key="item.id">
                             <template slot="title">
                                 <i class="el-icon-circle-plus"></i>
                                 <span>{{item['authName']}}</span>
                             </template>
                             <!-- 二级菜单 -->
                             <el-menu-item
-                                    :index="subItem.path"
+                                    :index="'/'+subItem.path"
                                     v-for="subItem in item.children"
                                     :key="subItem.id"
                                     @click="handleClickMenuItem(subItem.path)">
@@ -97,8 +97,8 @@
             },
             //点击二级菜单获取跳转路由路径
             handleClickMenuItem(path) {
-                window.sessionStorage.setItem('path', path);
-                this.currentTree = path;
+                window.sessionStorage.setItem('path', '/' + path);
+                this.currentTree = '/' + path;
             }
         }
     }

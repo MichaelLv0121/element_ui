@@ -11,7 +11,7 @@
             <el-row :gutter="20">
                 <el-col :span="6">
                     <el-input placeholder="请输入用户名"
-                              v-model="searchName"
+                              v-model.trim="searchName"
                               @change="handleSearchName"
                               @clear="getUserList"
                               clearable>

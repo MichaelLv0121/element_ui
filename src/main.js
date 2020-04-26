@@ -24,6 +24,21 @@ Vue.config.productionTip = false;
 //将树形结构table注册为全局组件
 Vue.component('tree-table', TreeTable);
 
+//将时间戳转为固定格式
+Vue.filter('dateFormat', (originVal) => {
+    const newDate = new Date(originVal);
+
+    const y = newDate.getFullYear();
+    const m = String(newDate.getMonth() + 1).padStart(2, '0');
+    const d = String(newDate.getDate()).padStart(2, '0');
+
+    const hh = String(newDate.getHours()).padStart(2, '0');
+    const mm = String(newDate.getMinutes()).padStart(2, '0');
+    const ss = String(newDate.getSeconds()).padStart(2, '0');
+
+    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
+})
+
 new Vue({
     router,
     render: h => h(App)
