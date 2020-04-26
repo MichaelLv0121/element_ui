@@ -32,21 +32,42 @@
             <el-tabs v-model="activeName" @tab-click="handleTabClick" type="border-card">
                 <el-tab-pane label="动态参数" name="many">
                     <el-button :disabled="isDisable" type="primary" size="mini" @click="handleAddParam">添加参数</el-button>
+
                     <!-- 动态参数 table -->
                     <el-table
                             :data="manyTableData"
                             stripe
                             border
                             style="width: 100%">
+
+                        <!-- 展开行 -->
                         <el-table-column type="expand">
                             <template slot-scope="scope">
-                                <el-tag closable
-                                        v-for="(item,index) in scope.row['attr_vals']"
-                                        type="success"
-                                        :key="index">{{item}}
-                                </el-tag>
+                                <!-- 循环输出的所有标签 -->
+                                <transition-group name="el-zoom-in-center">
+                                    <el-tag closable
+                                            v-for="(item,index) in scope.row['attr_vals']"
+                                            @close="handleTagClose(scope.row,index)"
+                                            :key="index">{{item}}
+                                    </el-tag>
+                                </transition-group>
+                                <!-- + 新标签 input -->
+                                <el-input
+                                        class="input-new-tag"
+                                        v-if="scope.row.inputVisible"
+                                        v-model.trim="scope.row.inputValue"
+                                        ref="saveTagInput"
+                                        size="small"
+                                        @keyup.enter.native="handleInputConfirm(scope.row)"
+                                        @blur="handleInputConfirm(scope.row)">
+                                </el-input>
+                                <!-- + 新标签 button -->
+                                <el-button v-else class="button-new-tag" size="small"
+                                           @click="showInput(scope.row)">+ 新标签
+                                </el-button>
                             </template>
                         </el-table-column>
+                        <!-- 索引行 -->
                         <el-table-column type="index" label="#"></el-table-column>
                         <el-table-column
                                 prop="attr_name"
@@ -73,12 +94,14 @@
                             stripe
                             border
                             style="width: 100%">
+
+                        <!-- 展开行 -->
                         <el-table-column type="expand">
                             <template slot-scope="scope">
                                 <!-- 循环输出的所有标签 -->
                                 <el-tag closable
                                         v-for="(item,index) in scope.row['attr_vals']"
-                                        type="success"
+                                        @close="handleTagClose(scope.row,index)"
                                         :key="index">{{item}}
                                 </el-tag>
                                 <!-- + 新标签 input -->
@@ -88,8 +111,8 @@
                                         v-model.trim="scope.row.inputValue"
                                         ref="saveTagInput"
                                         size="small"
-                                        @keyup.enter.native="handleInputConfirm"
-                                        @blur="handleInputConfirm">
+                                        @keyup.enter.native="handleInputConfirm(scope.row)"
+                                        @blur="handleInputConfirm(scope.row)">
                                 </el-input>
                                 <!-- + 新标签 button -->
                                 <el-button v-else class="button-new-tag" size="small"
@@ -97,6 +120,7 @@
                                 </el-button>
                             </template>
                         </el-table-column>
+                        <!-- 索引行 -->
                         <el-table-column type="index" label="#"></el-table-column>
                         <el-table-column
                                 prop="attr_name"
@@ -203,6 +227,8 @@
                 },
                 //当前行的参数id
                 currentLineParamId: [],
+                //当前行的标签
+                currentLineTags: ''
             };
         },
         created() {
@@ -225,7 +251,11 @@
             },
             //获取动态参数或静态属性
             async getParameters() {
-                if (this.selectedAllCate.length !== 3) return this.selectedAllCate = [];
+                if (this.selectedAllCate.length !== 3) {
+                    this.manyTableData = [];
+                    this.onlyTableData = [];
+                    return this.selectedAllCate = [];
+                }
                 const {data: res} = await this.$http.get(`categories/${this.thirdSortParam}/attributes`, {
                     params: {sel: this.activeName}
                 });
@@ -267,6 +297,7 @@
             //点击“编辑”按钮
             async handleEditParam(row) {
                 this.currentLineParamId = row['attr_id'];
+                this.currentLineTags = row['attr_vals'].join(' ');
                 const {data: res} = await this.$http.get(`categories/${this.thirdSortParam}/attributes/${row['attr_id']}`,
                     {params: {attr_sel: this.activeName}});
                 if (res['meta']['status'] !== 200) return this.$message.error('查询此参数数据失败！');
@@ -284,7 +315,8 @@
                     const {data: res} = await this.$http.put(`categories/${this.thirdSortParam}/attributes/${this.currentLineParamId}`,
                         {
                             attr_name: this.editParamForm.param,
-                            attr_sel: this.activeName
+                            attr_sel: this.activeName,
+                            attr_vals: this.currentLineTags
                         });
                     if (res['meta']['status'] !== 200) return this.$message.error('编辑失败！');
                     this.$message.success('编辑成功！');
@@ -306,12 +338,45 @@
                 await this.getParameters();
             },
             //new tag中的input失去焦点或按下回车触发的事件
-            handleInputConfirm() {
-                console.log('ok');
+            async handleInputConfirm(row) {
+                if (row.inputValue.length > 0) {
+                    //数组的浅拷贝
+                    const attrVal = row.attr_vals.slice(0);
+                    attrVal.push(row.inputValue);
+                    const {data: res} = await this.$http.put(`categories/${this.thirdSortParam}/attributes/${row['attr_id']}`, {
+                        attr_name: row.attr_name,
+                        attr_sel: row.attr_sel,
+                        attr_vals: attrVal.join(' ')
+                    });
+                    if (res['meta']['status'] !== 200) return this.$message.error('添加标签失败！');
+                    this.$message.success('添加标签成功！');
+                    row.attr_vals.push(row.inputValue);
+                    row.inputValue = '';
+                    row.inputVisible = false;
+                } else {
+                    row.inputValue = '';
+                    row.inputVisible = false;
+                }
             },
             //new tag中的button的点击事件
             showInput(row) {
                 row.inputVisible = true;
+                this.$nextTick(_ => {
+                    this.$refs.saveTagInput.$refs.input.focus();
+                });
+            },
+            //删除tag触发的事件
+            async handleTagClose(row, index) {
+                row.attr_vals.splice(index, 1);
+                const {data: res} = await this.$http.put(`categories/${this.thirdSortParam}/attributes/${row['attr_id']}`, {
+                    attr_name: row.attr_name,
+                    attr_sel: row.attr_sel,
+                    attr_vals: row.attr_vals.join(' ')
+                });
+                if (res['meta']['status'] !== 200) return this.$message.error('删除标签失败！');
+                this.$message.success('删除标签成功！');
+                row.inputValue = '';
+                row.inputVisible = false;
             },
         },
         computed: {
@@ -337,11 +402,19 @@
     }
 
     .el-tag {
-        margin-right: 20px;
+        margin: 10px 5px;
+    }
+
+    .button-new-tag {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 5px;
     }
 
     .input-new-tag {
-        width: 150px;
-
+        width: 100px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        margin-left: 5px;
     }
 </style>
