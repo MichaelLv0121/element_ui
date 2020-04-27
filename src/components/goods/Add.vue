@@ -277,10 +277,10 @@
                     clonedForm.goods_cat = clonedForm.goods_cat.join(',');
                     //向后台发起请求
                     const {data: res} = await this.$http.post('goods', clonedForm);
-                    if (res['meta']['status'] !== 201) return this.$message.error('添加商品失败！');
+                    if (res['meta']['status'] !== 201) return this.$message.error('添加商品失败！' + res['meta']['msg']);
                     this.$message.success('添加商品成功！');
                     setTimeout(() => this.$router.push('/goods'), 500);
-                })
+                });
             }
         },
         computed: {
