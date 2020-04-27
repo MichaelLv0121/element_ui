@@ -6,6 +6,11 @@ import './plugins/element.js'
 import './assets/css/global.css'
 //导入树形结构table
 import TreeTable from 'vue-table-with-tree-grid'
+//导入富文本组件
+import VueQuillEditor from 'vue-quill-editor'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
 
 //导入axios
 import Axios from "axios";
@@ -23,6 +28,8 @@ Vue.config.productionTip = false;
 
 //将树形结构table注册为全局组件
 Vue.component('tree-table', TreeTable);
+//将富文本组件注册为全局组件
+Vue.use(VueQuillEditor);
 
 //将时间戳转为固定格式
 Vue.filter('dateFormat', (originVal) => {
@@ -37,7 +44,7 @@ Vue.filter('dateFormat', (originVal) => {
     const ss = String(newDate.getSeconds()).padStart(2, '0');
 
     return `${y}-${m}-${d} ${hh}:${mm}:${ss}`;
-})
+});
 
 new Vue({
     router,

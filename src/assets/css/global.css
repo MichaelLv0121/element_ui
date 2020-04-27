@@ -19,8 +19,13 @@ html, body, #app {
 }
 
 .el-cascader__dropdown {
-    height: 300px!important;
+    height: 300px !important;
 }
+
 .el-cascader-panel {
+    height: 300px !important;
+}
+
+.ql-editor {
     height: 300px!important;
 }
