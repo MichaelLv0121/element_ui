@@ -14,4 +14,8 @@
     #app {
 
     }
+
+    #nprogress .bar {
+        background: #007bff !important;
+    }
 </style>
