@@ -26,7 +26,7 @@
 
             <!-- 用户列表 -->
             <el-table :data="userList" style="width: 100%" stripe border>
-                <el-table-column type="index"></el-table-column>
+                <el-table-column type="index" label="#"></el-table-column>
                 <el-table-column prop="username" label="姓名"></el-table-column>
                 <el-table-column prop="email" label="邮箱"></el-table-column>
                 <el-table-column prop="mobile" label="电话"></el-table-column>

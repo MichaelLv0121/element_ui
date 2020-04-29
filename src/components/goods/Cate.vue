@@ -22,7 +22,7 @@
                         :selection-type="false"
                         :expand-type="false"
                         show-index
-                        index-text
+                        index-text="#"
                         border>
                 <!-- 是否有效 -->
                 <template slot="isOk" slot-scope="scope">
