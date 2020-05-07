@@ -261,7 +261,7 @@
                 if (res['meta']['status'] === 200) {
                     //专门用于处理删除某一页（此页页码 >= 2）的最后一条数据时，手动获取前一页的数据
                     if (res['data']['users'].length === 0 && res['data']['pagenum'] > 1) {
-                        this.queryParam.pagenum--;
+                        this.queryParam.pagenum = 1;
                         await this.getUserList();
                     } else {
                         this.userList = res['data']['users'];

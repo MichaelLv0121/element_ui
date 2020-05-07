@@ -88,11 +88,18 @@
             //获取商品列表数据
             async getGoodsList() {
                 const {data: res} = await this.$http.get('goods', {params: this.queryParam});
-                if (res['meta']['status'] !== 200) return this.$message.error('获取商品列表失败！');
-                this.goodsList = res['data']['goods'];
-                this.total = res['data']['total'];
-
-                console.log(this.goodsList);
+                if (res['meta']['status'] === 200) {
+                    //专门用于处理删除某一页（此页页码 >= 2）的最后一条数据时，手动获取前一页的数据
+                    if (res['data']['goods'].length === 0 && res['data']['pagenum'] > 1) {
+                        this.queryParam.pagenum = 1;
+                        await this.getGoodsList();
+                    } else {
+                        this.goodsList = res['data']['goods'];
+                        this.total = res['data']['total'];
+                    }
+                } else {
+                    return this.$message.error('获取商品列表失败！');
+                }
             },
             //每页大小变化时触发的事件
             handleSizeChange(newSize) {
